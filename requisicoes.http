@@ -1,0 +1,130 @@
+# Use com a extensão REST Client do VS Code ou com o cliente HTTP do IntelliJ.
+# Os exemplos abaixo consideram uma inicialização nova, com os dados do professor.
+@base = http://localhost:8080
+
+### Listar músicas — 200
+GET {{base}}/musicas
+
+### Buscar música — 200
+GET {{base}}/musicas/1
+
+### Cadastrar música — 201, Location e ID gerado no corpo
+POST {{base}}/musicas
+Content-Type: application/json
+
+{
+  "titulo": "Hotel California",
+  "artista": "Eagles",
+  "album": "Hotel California",
+  "duracao": 391,
+  "genero": "Rock"
+}
+
+### Atualizar música — 200
+PUT {{base}}/musicas/2
+Content-Type: application/json
+
+{
+  "titulo": "Billie Jean",
+  "artista": "Michael Jackson",
+  "album": "Thriller",
+  "duracao": 294,
+  "genero": "Pop"
+}
+
+### Listar playlists — 200
+GET {{base}}/playlists
+
+### Buscar playlist — 200
+GET {{base}}/playlists/1
+
+### Criar playlist — 201
+POST {{base}}/playlists
+Content-Type: application/json
+
+{
+  "nome": "Para Estudar",
+  "descricao": "Músicas para manter o foco"
+}
+
+### Atualizar nome e descrição — 200
+PUT {{base}}/playlists/5
+Content-Type: application/json
+
+{
+  "nome": "Minhas Favoritas",
+  "descricao": "Minha seleção pessoal"
+}
+
+### Adicionar música diretamente — 201; repetição retorna 409
+POST {{base}}/playlists/3/musicas/3
+
+### Listar IDs das músicas — 200
+GET {{base}}/playlists/3/musicas
+
+### Remover associação — 204
+DELETE {{base}}/playlists/3/musicas/3
+
+### Adicionar usando OpenFeign — 200 e mensagem com os nomes
+# A playlist 2 inicialmente contém apenas a música 4.
+POST {{base}}/api/adicionar/2/musicas/1
+
+### Registrar reprodução — 201
+POST {{base}}/reproducao
+Content-Type: application/json
+
+{
+  "playlistid": 1
+}
+
+### Alias previsto na descrição de execução — 201
+POST {{base}}/statistic
+Content-Type: application/json
+
+{
+  "playlistid": 1
+}
+
+### Executar via OpenFeign — 200 e registro criado
+PUT {{base}}/api/executar/1
+
+### Listar reproduções — 200
+GET {{base}}/reproducao/1
+
+### Total — 200; inicialmente 5, após os três registros acima: 8
+GET {{base}}/reproducao/total/1
+
+### Dados inválidos — 400 com os campos e as mensagens
+POST {{base}}/musicas
+Content-Type: application/json
+
+{
+  "titulo": "   ",
+  "artista": "",
+  "duracao": 0
+}
+
+### Playlist inválida — 400
+POST {{base}}/playlists
+Content-Type: application/json
+
+{
+  "nome": "   "
+}
+
+### Música inexistente validada via OpenFeign — 404
+POST {{base}}/api/adicionar/1/musicas/999
+
+### Playlist inexistente — 404
+PUT {{base}}/api/executar/999
+
+### Música já presente — 409
+POST {{base}}/api/adicionar/1/musicas/1
+
+### Excluir playlist e seus vínculos — 204; músicas continuam no catálogo
+# Execute por último, pois afeta os exemplos da playlist 5.
+DELETE {{base}}/playlists/5
+
+### Excluir música e seus vínculos — 204; playlists continuam existindo
+# Execute por último, pois a música 4 pertence a outras playlists.
+DELETE {{base}}/musicas/4
